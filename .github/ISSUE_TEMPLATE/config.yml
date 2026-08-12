@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/r0ptik/argus/security/advisories/new
+    about: >-
+      Memory-safety faults, sandbox escapes, or anything else in the "actual
+      vulnerabilities" list in SECURITY.md. Please do not open a public issue.
+
+  - name: Question or analysis help
+    url: https://github.com/r0ptik/argus/discussions
+    about: >-
+      Stuck on a target, unsure which tool to reach for, or want to compare
+      notes on an approach. Discussions is a better fit than the issue tracker.

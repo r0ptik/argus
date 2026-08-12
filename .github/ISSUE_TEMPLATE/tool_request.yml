@@ -1,0 +1,49 @@
+name: Tool or capability request
+description: Argus should be able to gather some kind of evidence that it cannot today.
+labels: [enhancement]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Argus returns evidence, not conclusions. Requests for a tool that
+        interprets results rather than reporting them are unlikely to be
+        accepted — see CONTRIBUTING.md.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to find out about the target?
+      description: Describe the analysis question, not the API you have in mind.
+    validations:
+      required: true
+
+  - type: textarea
+    id: today
+    attributes:
+      label: How do you do it today
+      description: |
+        Manually in a debugger? With a different tool? Not at all? If you have a
+        working manual procedure, describe the steps — that is usually the
+        clearest specification of the tool.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: What should the tool return
+      description: |
+        The concrete facts — addresses, bytes, instructions, names — not the
+        interpretation of them.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: arch
+    attributes:
+      label: Does this differ between x86 and x64?
+      options:
+        - Same on both
+        - Differs
+        - Not sure

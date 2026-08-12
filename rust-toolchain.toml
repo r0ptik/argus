@@ -1,0 +1,6 @@
+[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]
+# The router dispatches between a 32-bit and a 64-bit engine, so a working
+# checkout needs both targets, not just the host one.
+targets = ["x86_64-pc-windows-msvc", "i686-pc-windows-msvc"]
