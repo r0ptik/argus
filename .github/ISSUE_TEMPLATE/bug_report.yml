@@ -1,0 +1,82 @@
+name: Bug report
+description: Argus returned something wrong, crashed, or would not attach.
+labels: [bug]
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Analysis results that are *wrong* are as much a bug as a crash. If an
+        address, offset, or resolved target came back incorrect, that belongs
+        here.
+
+        For anything in the "actual vulnerabilities" list in SECURITY.md, use
+        private vulnerability reporting instead.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you ask for, and what came back?
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+      description: |
+        If you know the correct answer from another tool — a debugger, Ghidra,
+        IDA — say what it said. That makes this much faster to fix.
+    validations:
+      required: true
+
+  - type: textarea
+    id: tool-call
+    attributes:
+      label: Tool call
+      description: The MCP tool and arguments involved.
+      render: json
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Argus version
+      description: Release tag, or the commit you built from.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: target-arch
+    attributes:
+      label: Target process architecture
+      options:
+        - x64 (native)
+        - x86 under WOW64
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: host
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 24H2 / Windows Server 2022 / ..."
+    validations:
+      required: true
+
+  - type: input
+    id: client
+    attributes:
+      label: MCP client
+      placeholder: "Claude Code, Codex, Cursor, custom ..."
+
+  - type: textarea
+    id: target
+    attributes:
+      label: Target process
+      description: |
+        Whatever you can share about the target — packed, obfuscated, .NET,
+        anti-debug present, statically linked. You do not need to name it.
