@@ -89,10 +89,18 @@ jobs:
           $repo = "${{ github.repository }}"
           $sha = (Get-FileHash dist/argus.mcpb -Algorithm SHA256).Hash.ToLower()
 
+          # The registry caps description at 100 characters and rejects the
+          # whole submission with a 422 if it is longer.
+          $description = 'Reverse-engineering evidence from a running Windows process, not the binary on disk.'
+          if ($description.Length -gt 100) {
+            throw "description is $($description.Length) chars; the registry limit is 100"
+          }
+
           $server = [ordered]@{
             '$schema'   = 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json'
             name        = "io.github.$($repo.Split('/')[0])/argus"
-            description = 'Runtime evidence from a live Windows process: memory, disassembly, IAT resolution, call-chain tracing, and a hypothesis ledger.'
+            title       = 'Argus'
+            description = $description
             version     = $version
             websiteUrl  = "https://github.com/$repo"
             repository  = [ordered]@{
