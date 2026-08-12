@@ -124,3 +124,38 @@ jobs:
             dist/argus.mcpb.sha256
             dist/server.json
           generate_release_notes: true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: server-json
+          path: dist/server.json
+
+  # Separate job so the registry entry can only be created after the release
+  # assets are actually live — server.json points at a download URL, and the
+  # registry fetches it to verify the hash.
+  registry:
+    needs: release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write # required for OIDC login
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: server-json
+
+      - name: Install mcp-publisher
+        run: |
+          gh release download -R modelcontextprotocol/registry \
+            -p 'mcp-publisher_linux_amd64.tar.gz' -O publisher.tar.gz
+          tar -xzf publisher.tar.gz mcp-publisher
+          chmod +x mcp-publisher
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Publish to the MCP registry
+        run: |
+          ./mcp-publisher login github-oidc
+          ./mcp-publisher publish
