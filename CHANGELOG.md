@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-08-12
+
+### Added
+
+- An `.mcpb` bundle is now built and attached to each release, so Argus can be
+  installed from the official MCP registry without first shipping an npm or PyPI
+  package. The bundle carries `manifest.json` and declares all 36 tools.
+- Releases also carry a generated `server.json` containing the bundle's real
+  SHA-256, so publishing to the registry never involves a hand-copied hash.
+
 ## [0.1.0] - 2026-08-12
 
 First public release.
@@ -35,5 +45,6 @@ First public release.
   overrides, then sibling `argus-rs-x86.exe` / `argus-rs-x64.exe` next to the
   router, then the cargo target tree used during development.
 
-[Unreleased]: https://github.com/r0ptik/argus/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/r0ptik/argus/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/r0ptik/argus/releases/tag/v0.1.1
 [0.1.0]: https://github.com/r0ptik/argus/releases/tag/v0.1.0

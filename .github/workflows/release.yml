@@ -45,12 +45,74 @@ jobs:
           Copy-Item LICENSE   "$stage/LICENSE"
           Compress-Archive -Path "$stage/*" -DestinationPath "dist/argus-windows.zip"
 
-      - name: Checksum
+      # An .mcpb bundle is a zip with manifest.json at the root. The official MCP
+      # registry can install one straight from a release asset, so this is what
+      # lets Argus be listed without first shipping an npm or PyPI package.
+      - name: Build MCPB bundle
         shell: pwsh
         run: |
-          $h = Get-FileHash dist/argus-windows.zip -Algorithm SHA256
-          "$($h.Hash.ToLower())  argus-windows.zip" |
-            Out-File -FilePath dist/argus-windows.zip.sha256 -Encoding ascii
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart('v')
+
+          $bundle = "dist/mcpb"
+          New-Item -ItemType Directory -Force -Path $bundle | Out-Null
+          Copy-Item "dist/argus/argus-router.exe"  $bundle
+          Copy-Item "dist/argus/argus-rs-x64.exe"  $bundle
+          Copy-Item "dist/argus/argus-rs-x86.exe"  $bundle
+          Copy-Item README.md $bundle
+          Copy-Item LICENSE   $bundle
+
+          # Keep the manifest version in step with the tag being released.
+          $manifest = Get-Content mcpb/manifest.json -Raw | ConvertFrom-Json
+          $manifest.version = $version
+          $manifest | ConvertTo-Json -Depth 12 |
+            Out-File "$bundle/manifest.json" -Encoding utf8
+
+          Compress-Archive -Path "$bundle/*" -DestinationPath "dist/argus.mcpb"
+
+      - name: Checksums
+        shell: pwsh
+        run: |
+          foreach ($f in "argus-windows.zip", "argus.mcpb") {
+            $h = (Get-FileHash "dist/$f" -Algorithm SHA256).Hash.ToLower()
+            "$h  $f" | Out-File -FilePath "dist/$f.sha256" -Encoding ascii
+          }
+
+      # server.json carries the bundle's hash, so it can only be written once the
+      # bundle exists. Shipping it as a release asset means `mcp-publisher publish`
+      # never has to be fed a hand-edited hash.
+      - name: Generate server.json
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $version = $tag.TrimStart('v')
+          $repo = "${{ github.repository }}"
+          $sha = (Get-FileHash dist/argus.mcpb -Algorithm SHA256).Hash.ToLower()
+
+          $server = [ordered]@{
+            '$schema'   = 'https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json'
+            name        = "io.github.$($repo.Split('/')[0])/argus"
+            description = 'Runtime evidence from a live Windows process: memory, disassembly, IAT resolution, call-chain tracing, and a hypothesis ledger.'
+            version     = $version
+            websiteUrl  = "https://github.com/$repo"
+            repository  = [ordered]@{
+              url    = "https://github.com/$repo"
+              source = 'github'
+            }
+            packages = @(
+              [ordered]@{
+                registryType    = 'mcpb'
+                registryBaseUrl = 'https://github.com'
+                identifier      = "https://github.com/$repo/releases/download/$tag/argus.mcpb"
+                version         = $version
+                fileSha256      = $sha
+                transport       = @{ type = 'stdio' }
+              }
+            )
+          }
+
+          $server | ConvertTo-Json -Depth 12 | Out-File dist/server.json -Encoding utf8
+          Get-Content dist/server.json
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
@@ -58,4 +120,7 @@ jobs:
           files: |
             dist/argus-windows.zip
             dist/argus-windows.zip.sha256
+            dist/argus.mcpb
+            dist/argus.mcpb.sha256
+            dist/server.json
           generate_release_notes: true

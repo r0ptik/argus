@@ -1,0 +1,190 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/mcpb/main/schemas/mcpb-manifest-latest.schema.json",
+  "manifest_version": "0.3",
+  "name": "argus",
+  "display_name": "Argus",
+  "version": "0.1.0",
+  "description": "Runtime evidence from a live Windows process: memory, disassembly, IAT resolution, call-chain tracing, and a hypothesis ledger.",
+  "long_description": "Other reverse-engineering MCP servers bridge a static analyzer and hand the agent the file on disk. Argus attaches to a running Windows process and returns what the program actually became: real bytes at real addresses, disassembly of the code that executed, resolved IAT thunks, caller chains walked from live memory, and recovered structures.\n\nA processor cannot execute ciphertext, so packing, string encryption and runtime-resolved imports all have to be undone before the code runs. At that instant the truth is sitting in memory in the clear.\n\nBuilt for recovering protocols from software whose servers no longer exist, where the client binary is the only surviving specification. Also useful for malware analysis, interoperability work, and debugging memory corruption.\n\nargus-router inspects the target, decides whether it is x86 or x64, and dispatches to the matching engine, so one configured binary handles both native x64 and WOW64 targets.",
+  "author": {
+    "name": "r0ptik",
+    "url": "https://github.com/r0ptik"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/r0ptik/argus.git"
+  },
+  "homepage": "https://github.com/r0ptik/argus",
+  "documentation": "https://github.com/r0ptik/argus#readme",
+  "support": "https://github.com/r0ptik/argus/issues",
+  "license": "MIT",
+  "keywords": [
+    "reverse-engineering",
+    "memory-analysis",
+    "dynamic-analysis",
+    "windows",
+    "disassembly",
+    "protocol-analysis",
+    "game-preservation"
+  ],
+  "server": {
+    "type": "binary",
+    "entry_point": "argus-router.exe",
+    "mcp_config": {
+      "command": "${__dirname}/argus-router.exe",
+      "args": []
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "win32"
+    ]
+  },
+  "tools_generated": false,
+  "tools": [
+    {
+      "name": "processes_list",
+      "description": "List running Windows processes so the AI can find a target PID before reading runtime memory."
+    },
+    {
+      "name": "processes_find",
+      "description": "Find running process candidates by name substring, exact image name, or PID."
+    },
+    {
+      "name": "runtime_imports",
+      "description": "Parse PE32 import/IAT data from the live mapped process image."
+    },
+    {
+      "name": "runtime_exports",
+      "description": "Parse PE export tables from live mapped modules and return exported API names with runtime VA/RVA evidence."
+    },
+    {
+      "name": "resolve_api_targets",
+      "description": "Resolve runtime API targets from loaded module exports."
+    },
+    {
+      "name": "resolve_iat_thunks",
+      "description": "Find x86 import thunks such as jmp/call dword ptr [IAT] and return the runtime target plus thunk address."
+    },
+    {
+      "name": "disasm_at",
+      "description": "Decode 32-bit runtime instructions at an address using a targeted memory window."
+    },
+    {
+      "name": "analyze_function",
+      "description": "Disassemble one runtime function body from a targeted memory window until ret/count and collect direct callees."
+    },
+    {
+      "name": "scan_x86_call_sites",
+      "description": "Find direct x86 E8/E9 call/jump sites to a target, annotate each with instruction text and best-effort function start."
+    },
+    {
+      "name": "analyze_send_call_sites",
+      "description": "For a send/thunk target, scan executable call sites and return compact evidence from preceding instructions: push immediate opcode candidates, push string addresses, and packet-shaped C_/S_ names."
+    },
+    {
+      "name": "extract_dispatch_tables",
+      "description": "For a recv dispatcher, identify index/jump table candidates from runtime instructions and, when tables are found or provided, output opcode -> dispatch index -> stub -> handler evidence with opcode_value_location."
+    },
+    {
+      "name": "trace_call_chain",
+      "description": "Walk callers upward from a runtime target for a bounded number of depths."
+    },
+    {
+      "name": "mem_read",
+      "description": "Read runtime memory at an address and return AI-first evidence with module/RVA, region flags, byte context, ASCII preview, and next-tool hints."
+    },
+    {
+      "name": "mem_write",
+      "description": "Write exact bytes to runtime memory and return the write evidence."
+    },
+    {
+      "name": "mem_read_chain",
+      "description": "Read a pointer chain using original Argus semantics: dereference base, add offsets, dereference intermediate nodes, then return final bytes."
+    },
+    {
+      "name": "read_struct",
+      "description": "Read consecutive 4-byte words and report raw u32 values plus possible pointer target region evidence."
+    },
+    {
+      "name": "correlate_addr",
+      "description": "Convert between live process address, RVA, and Ghidra/static address using the main module base."
+    },
+    {
+      "name": "locate",
+      "description": "Evidence chain matching original Argus: scan string, find pointers to it, keep executable refs, and return best-effort containing function starts."
+    },
+    {
+      "name": "find_vtable",
+      "description": "Find x86 MSVC RTTI/vtable evidence: TypeDescriptor string, COL, vtable address, and method slots."
+    },
+    {
+      "name": "diff_struct",
+      "description": "Overlay static struct fields from Hydra /structs/{name} or provided fields onto live memory and return raw field bytes plus pointer-region evidence."
+    },
+    {
+      "name": "record_hypothesis",
+      "description": "Append an unverified AI hypothesis to the evidence ledger."
+    },
+    {
+      "name": "add_evidence",
+      "description": "Attach external/static/dynamic evidence to an existing hypothesis record."
+    },
+    {
+      "name": "verify_hypothesis",
+      "description": "Mark a hypothesis as verified or contradicted."
+    },
+    {
+      "name": "query_hypotheses",
+      "description": "Read the evidence ledger by entity/status/claim_type and include negative knowledge for an entity."
+    },
+    {
+      "name": "real_rate",
+      "description": "Return verified/total and counts by status/source/claim type from the evidence ledger."
+    },
+    {
+      "name": "mem_attach",
+      "description": "Compatibility alias for original Argus mem_attach."
+    },
+    {
+      "name": "mem_modules",
+      "description": "List target process modules with base addresses and image sizes for RVA correlation."
+    },
+    {
+      "name": "memory_regions",
+      "description": "List committed runtime memory regions with base, size, kind, and protection flags so AI can distinguish image/private/executable/readable areas before scanning."
+    },
+    {
+      "name": "scan_string",
+      "description": "Scan readable runtime memory for an exact string."
+    },
+    {
+      "name": "scan_regex",
+      "description": "Scan readable runtime memory with a regex, for packet names such as C_[A-Za-z0-9_]+ or S_[A-Za-z0-9_]+."
+    },
+    {
+      "name": "scan_bytes",
+      "description": "Scan runtime memory for an AOB pattern."
+    },
+    {
+      "name": "scan_pointers_to",
+      "description": "Scan readable runtime memory for pointers to an address and return AI-first pointer evidence."
+    },
+    {
+      "name": "scan_callers",
+      "description": "Scan executable readable regions for x86 E8/E9 rel32 callers or jumpers to a target address."
+    },
+    {
+      "name": "value_scan_start",
+      "description": "Start a typed value investigation scan."
+    },
+    {
+      "name": "value_scan_refine",
+      "description": "Refine value candidates using a fresh memory read."
+    },
+    {
+      "name": "value_explain",
+      "description": "Explain one value candidate as AI-first evidence with local bytes, region/module context, typed numeric value, and next-tool hints."
+    }
+  ]
+}

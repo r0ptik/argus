@@ -72,16 +72,29 @@ step that proves what users actually receive works.
 
 ## 7. MCP registry
 
-The official registry stores metadata only; the package has to be resolvable
-first. Generate the descriptor rather than writing it by hand:
+The official registry stores metadata only and downloads the package from
+wherever `identifier` points. Argus ships an `.mcpb` bundle — a zip with
+`manifest.json` at its root — as a release asset, so no npm or PyPI package is
+needed.
+
+The release workflow already produced `server.json` with the bundle's real
+SHA-256 in it. Do not hand-edit that hash; download the generated file:
 
 ```bash
-mcp-publisher init      # produces server.json
+gh release download v0.1.0 -R r0ptik/argus -p server.json
 mcp-publisher login github
 mcp-publisher publish
 ```
 
-Under GitHub authentication the server name must be `io.github.r0ptik/argus`.
+Under GitHub authentication the server name must be `io.github.r0ptik/argus`,
+which is what the workflow generates.
+
+If `mcp-publisher` is missing, grab the Windows build from the registry repo:
+
+```bash
+gh release download -R modelcontextprotocol/registry -p 'mcp-publisher_windows_amd64.tar.gz'
+tar -xzf mcp-publisher_windows_amd64.tar.gz
+```
 
 Then submit to the community directories: mcp.so, Smithery, PulseMCP, Glama, and
 open a PR against the awesome-mcp-servers lists.
