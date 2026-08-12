@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc, i686-pc-windows-msvc
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format
+        run: cargo fmt --all --check
+
+      # Advisory for now: the tree has 9 known style lints (derivable Default,
+      # clamp pattern, two over-long signatures, manual is_multiple_of).
+      # Flip continue-on-error off once those are cleared.
+      - name: Clippy
+        continue-on-error: true
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace
+
+      # The x86 engine is what handles WOW64 targets, so a build break there is
+      # just as fatal as one on x64 even though the tests run on x64 only.
+      - name: Build x86 engine
+        run: cargo build --target i686-pc-windows-msvc -p argus-rs

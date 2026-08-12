@@ -1,0 +1,8 @@
+/target/
+**/*.rs.bk
+*.pdb
+
+# local scratch
+*.log
+*.tmp
+/dist/

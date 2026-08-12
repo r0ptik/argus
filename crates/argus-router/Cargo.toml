@@ -1,0 +1,10 @@
+[package]
+name = "argus-router"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+argus-winmem = { path = "../argus-winmem" }
+evidence-core = { path = "../evidence-core" }
+serde_json = "1"

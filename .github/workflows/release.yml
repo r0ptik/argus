@@ -1,0 +1,61 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust with both Windows targets
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc, i686-pc-windows-msvc
+
+      - name: Test
+        run: cargo test --workspace --release
+
+      - name: Build x64
+        run: cargo build --release --target x86_64-pc-windows-msvc
+
+      - name: Build x86
+        run: cargo build --release --target i686-pc-windows-msvc
+
+      # The router looks for the engines as siblings named argus-rs-x86.exe /
+      # argus-rs-x64.exe, so the archive is laid out flat rather than mirroring
+      # the cargo target tree.
+      - name: Assemble archive
+        shell: pwsh
+        run: |
+          $stage = "dist/argus"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item target/x86_64-pc-windows-msvc/release/argus-router.exe "$stage/argus-router.exe"
+          Copy-Item target/x86_64-pc-windows-msvc/release/argus-rs.exe     "$stage/argus-rs-x64.exe"
+          Copy-Item target/i686-pc-windows-msvc/release/argus-rs.exe       "$stage/argus-rs-x86.exe"
+          Copy-Item README.md "$stage/README.md"
+          Copy-Item LICENSE   "$stage/LICENSE"
+          Compress-Archive -Path "$stage/*" -DestinationPath "dist/argus-windows.zip"
+
+      - name: Checksum
+        shell: pwsh
+        run: |
+          $h = Get-FileHash dist/argus-windows.zip -Algorithm SHA256
+          "$($h.Hash.ToLower())  argus-windows.zip" |
+            Out-File -FilePath dist/argus-windows.zip.sha256 -Encoding ascii
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/argus-windows.zip
+            dist/argus-windows.zip.sha256
+          generate_release_notes: true
