@@ -107,14 +107,16 @@ jobs:
               url    = "https://github.com/$repo"
               source = 'github'
             }
+            # MCPB packages carry the full download URL in `identifier` and the
+            # registry rejects them outright if `registryBaseUrl` is also set,
+            # even though the schema lists github.com as a valid example value.
             packages = @(
               [ordered]@{
-                registryType    = 'mcpb'
-                registryBaseUrl = 'https://github.com'
-                identifier      = "https://github.com/$repo/releases/download/$tag/argus.mcpb"
-                version         = $version
-                fileSha256      = $sha
-                transport       = @{ type = 'stdio' }
+                registryType = 'mcpb'
+                identifier   = "https://github.com/$repo/releases/download/$tag/argus.mcpb"
+                version      = $version
+                fileSha256   = $sha
+                transport    = @{ type = 'stdio' }
               }
             )
           }
