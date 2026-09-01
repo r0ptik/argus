@@ -135,7 +135,7 @@ jobs:
             dist/server.json
           generate_release_notes: true
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: server-json
           path: dist/server.json
